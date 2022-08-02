@@ -2,6 +2,7 @@ import torch
 from torch.autograd import Variable
 
 from .ood_methods import OODMethod
+from ...data.datatypes import TaskType
 
 
 class ODIN(OODMethod):
@@ -16,9 +17,12 @@ class ODIN(OODMethod):
             return {"temperature": self.temperature, "noise": self.noise}
         return f"temp: {self.temperature}, noise: {self.noise}"
 
-    def _temp_and_pertubate(self, imgs, net):
+    def _temp_and_pertubate(self, imgs, net, task_type = TaskType.SEGMENTATION):
         inputs = Variable(imgs.cuda(), requires_grad=True)
-        outputs, *_ = net(inputs)
+        if  task_type == TaskType.SEGMENTATION:
+            outputs, *_ = net(inputs)
+        else:
+            outputs = net(inputs)
 
         max = torch.max(outputs.data, axis=1)[0]
         scores = torch.softmax(outputs.data - max.unsqueeze(1), dim=1)
@@ -31,12 +35,15 @@ class ODIN(OODMethod):
         gradient = (gradient.float() - 0.5) * 2
 
         tempInputs = torch.add(inputs.data, gradient, alpha=-self.noise)
-        outputs, *_ = net(tempInputs)
+        if  task_type == TaskType.SEGMENTATION:
+            outputs, *_ = net(tempInputs)
+        else:
+            outputs = net(tempInputs)
         outputs = outputs / self.temperature
         return outputs
 
-    def calculate_ood_score(self, imgs, net, batch=None):
-        outputs = self._temp_and_pertubate(imgs, net)
+    def calculate_ood_score(self, imgs, net, batch=None, task_type = TaskType.SEGMENTATION):
+        outputs = self._temp_and_pertubate(imgs, net,task_type)
         outputs = outputs - torch.max(outputs, axis=1)[0].unsqueeze(1)
         scores = torch.softmax(outputs.data, dim=1)
         m, _ = torch.max(scores, axis=1)

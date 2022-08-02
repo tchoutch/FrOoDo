@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 
 class SampleDataset:
-    def sample(self, n=5, show=True, random=True):
+    def sample(self, n=5, show=False, random=True):
         if random:
             ids = np.random.choice(
                 range(len(self)),

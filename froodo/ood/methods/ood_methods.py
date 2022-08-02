@@ -24,7 +24,7 @@ class OODMethod:
     def remodify_net(self, net):
         return net
 
-    def calculate_ood_score(self, imgs, net, batch=None):
+    def calculate_ood_score(self, imgs, net, batch=None, task_type = TaskType.SEGMENTATION):
         raise NotImplementedError("Please Implement this method")
 
     def _set_metadata(self, batch: Batch, scores) -> Batch:
@@ -46,7 +46,7 @@ class OODMethod:
         # modify network if needed
         net = self.modify_net(net)
 
-        scores = self.calculate_ood_score(batch.image, net, batch).numpy()
+        scores = self.calculate_ood_score(batch.image, net, batch,task_type).numpy()
 
         # if task type is segmentation ood score will be array with shape like the mask
         # therefore it will be reduced to one score per sample

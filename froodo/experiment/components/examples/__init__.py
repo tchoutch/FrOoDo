@@ -1,2 +1,3 @@
 from .augmentation_ood_eval import AugmentationOODEvaluationComponent
 from .dataset_ood_eval import DatasetOODEvaluationComponent
+from .classification_ood_eval import ClassificationOODEvaluationComponent
